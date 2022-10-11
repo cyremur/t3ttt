@@ -74,7 +74,7 @@ const Board = ({ board, claimField, clearBoard }: GameState) => {
             i={i}
             j={j}
             claimField={(i: number, j: number) => {
-              if (!board.isOver()) {
+              if (!board.isOver() && board.getField(i, j).state === " ") {
                 claimField(i, j, board.turn);
               }
             }}
@@ -95,7 +95,7 @@ type FieldCardProps = {
 const FieldCard = ({ fieldState, i, j, claimField }: FieldCardProps) => {
   return (
     <section
-      className="flex h-28 w-28 flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl duration-500 motion-safe:hover:scale-105"
+      className="flex h-28 w-28 cursor-pointer select-none flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl duration-500 motion-safe:hover:scale-105"
       onClick={() => {
         claimField(i, j);
       }}
