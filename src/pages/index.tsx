@@ -2,8 +2,8 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
-import { GameState, useBearStore, useTTTStore } from "../datamodel/zustand";
-import { FieldState, Player, TTTBoard } from "../datamodel/gamestate";
+import { GameState, useTTTStore } from "../datamodel/zustand";
+import { FieldState, TTTBoard } from "../datamodel/gamestate";
 
 const Home: NextPage = () => {
   const hello = trpc.example.hello.useQuery({ text: "from tRPC" });
@@ -22,12 +22,38 @@ const Home: NextPage = () => {
           Create <span className="text-purple-300">T3TTT</span> App
         </h1>
         <Board board={board} claimField={claimField} clearBoard={clearBoard} />
+        <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
+          <Label board={board} />
+        </h1>
       </main>
     </>
   );
 };
 
 export default Home;
+
+const Label = ({ board }: { board: TTTBoard }) => {
+  if (!board.isOver()) {
+    return (
+      <span>
+        Turn: <span className="text-purple-300">{board.turn.toString()}</span>
+      </span>
+    );
+  } else {
+    if (board.getWinner() === " ") {
+      return <span className="text-purple-300">It's a draw!</span>;
+    } else {
+      return (
+        <span>
+          Winner:{" "}
+          <span className="text-purple-300">
+            {board.getWinner().toString()}
+          </span>
+        </span>
+      );
+    }
+  }
+};
 
 const Board = ({ board, claimField, clearBoard }: GameState) => {
   return (
@@ -39,7 +65,11 @@ const Board = ({ board, claimField, clearBoard }: GameState) => {
             fieldState={field.state}
             i={i}
             j={j}
-            claimField={(i: number, j: number) => claimField(i, j, board.turn)}
+            claimField={(i: number, j: number) => {
+              if (!board.isOver()) {
+                claimField(i, j, board.turn);
+              }
+            }}
           />
         ))
       )}
@@ -57,9 +87,8 @@ type FieldCardProps = {
 const FieldCard = ({ fieldState, i, j, claimField }: FieldCardProps) => {
   return (
     <section
-      className="flex h-28 w-28 min-w-full flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl duration-500 motion-safe:hover:scale-105"
+      className="flex h-28 w-28 flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl duration-500 motion-safe:hover:scale-105"
       onClick={() => {
-        console.log(`${i}, ${j}, X`);
         claimField(i, j);
       }}
     >
