@@ -25,6 +25,12 @@ const Home: NextPage = () => {
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
           <Label board={board} />
         </h1>
+        {board.isOver() && <button
+        className="rounded-md border border-black bg-violet-50 px-4 py-2 text-xl shadow-lg hover:bg-violet-100"
+        onClick={clearBoard}
+      >
+        {"Restart?"}
+      </button>}
       </main>
     </>
   );
