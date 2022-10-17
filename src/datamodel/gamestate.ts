@@ -3,17 +3,18 @@ export type FieldState = Player | " ";
 
 export class Field {
   state: FieldState;
+  board: TTTBoard;
 
-  constructor() {
+  constructor(board: TTTBoard) {
     this.state = " ";
+    this.board = board;
   }
 
   claim(player: Player) {
     if (this.state === " ") {
       this.state = player;
-      return true;
+      this.board.endTurn();
     }
-    return false;
   }
 }
 
@@ -24,9 +25,9 @@ export class TTTBoard {
 
   constructor() {
     this.fields = [
-      [new Field(), new Field(), new Field()],
-      [new Field(), new Field(), new Field()],
-      [new Field(), new Field(), new Field()],
+      [new Field(this), new Field(this), new Field(this)],
+      [new Field(this), new Field(this), new Field(this)],
+      [new Field(this), new Field(this), new Field(this)],
     ];
     this.turn = 0;
     this.winner = " ";
@@ -37,14 +38,15 @@ export class TTTBoard {
   }
 
   claim(i: number, j: number) {
-    const player = this.getActivePlayer()
-    const claimSuccessful = this.getField(i, j).claim(player);
-    if (claimSuccessful) {
-      if (this.isWinner(player)) {
-        this.winner = player;
-      }
-      this.turn += 1;
+    this.getField(i, j).claim(this.getActivePlayer());
+  }
+
+  endTurn() {
+    const player = this.getActivePlayer();
+    if (this.isWinner(player)) {
+      this.winner = player;
     }
+    this.turn += 1;
   }
 
   getField(i: number, j: number) {
