@@ -3,7 +3,8 @@ import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
 import { GameState, useTTTStore } from "../datamodel/zustand";
-import { FieldState, TTTBoard } from "../datamodel/gamestate";
+import { Field, FieldState, TTTBoard } from "../datamodel/gamestate";
+import classNames from "classnames";
 
 const Home: NextPage = () => {
   const hello = trpc.example.hello.useQuery({ text: "from tRPC" });
@@ -21,7 +22,7 @@ const Home: NextPage = () => {
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
           Create <span className="text-purple-300">T3TTT</span> App
         </h1>
-        <Board board={board} claimField={claimField}/>
+        <Board board={board} claimField={claimField} />
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
           <Label board={board} />
         </h1>
@@ -44,7 +45,10 @@ const Label = ({ board }: { board: TTTBoard }) => {
   if (!board.isOver()) {
     return (
       <span>
-        Turn: <span className="text-purple-300">{board.getActivePlayer().toString()}</span>
+        Turn:{" "}
+        <span className="text-purple-300">
+          {board.getActivePlayer().toString()}
+        </span>
       </span>
     );
   } else {
@@ -65,19 +69,15 @@ const Label = ({ board }: { board: TTTBoard }) => {
 
 const Board = ({ board, claimField }: Omit<GameState, "clearBoard">) => {
   return (
-    <div className="mt-3 grid grid-cols-3 gap-3 pt-3 text-center">
+    <div className={classNames("mt-3 grid grid-cols-3 gap-3 pt-3 text-center")}>
       {board.fields.map((row, i) =>
         row.map((field, j) => (
           <FieldCard
             key={`${i}, ${j}, ${field.state}`}
-            fieldState={field.state}
+            field={field}
             i={i}
             j={j}
-            claimField={(i: number, j: number) => {
-              if (!board.isOver()) {
-                claimField(i, j);
-              }
-            }}
+            claimField={claimField}
           />
         ))
       )}
@@ -86,21 +86,35 @@ const Board = ({ board, claimField }: Omit<GameState, "clearBoard">) => {
 };
 
 type FieldCardProps = {
-  fieldState: FieldState;
+  field: Field;
   i: number;
   j: number;
   claimField: (i: number, j: number) => void;
 };
 
-const FieldCard = ({ fieldState, i, j, claimField }: FieldCardProps) => {
+const FieldCard = ({ field, i, j, claimField }: FieldCardProps) => {
   return (
     <section
-      className="flex h-28 w-28 flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl duration-500 motion-safe:hover:scale-105"
+      className={classNames(
+        "flex h-28 w-28 select-none flex-col justify-center rounded border-2 border-gray-500 p-6 shadow-xl",
+        {
+          "cursor-pointer duration-500 motion-safe:hover:scale-105":
+            !field.isClaimed() && !field.board.isOver(),
+        }
+      )}
       onClick={() => {
-        claimField(i, j);
+        if (!field.board.isOver()) {
+          claimField(i, j);
+        }
       }}
     >
-      <h2 className="text-5xl text-gray-700">{fieldState.toString()}</h2>
+      <h2
+        className={classNames("text-5xl text-gray-700", {
+          "animate-ping text-purple-600": field.isWinning,
+        })}
+      >
+        {field.state.toString()}
+      </h2>
     </section>
   );
 };

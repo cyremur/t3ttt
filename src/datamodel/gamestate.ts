@@ -4,10 +4,12 @@ export type FieldState = Player | " ";
 export class Field {
   state: FieldState;
   board: TTTBoard;
+  isWinning: boolean;
 
   constructor(board: TTTBoard) {
     this.state = " ";
     this.board = board;
+    this.isWinning = false;
   }
 
   claim(player: Player) {
@@ -15,6 +17,14 @@ export class Field {
       this.state = player;
       this.board.endTurn();
     }
+  }
+
+  isClaimed() {
+    return this.state !== " ";
+  }
+
+  markWinning() {
+    this.isWinning = true;
   }
 }
 
@@ -43,9 +53,7 @@ export class TTTBoard {
 
   endTurn() {
     const player = this.getActivePlayer();
-    if (this.isWinner(player)) {
-      this.winner = player;
-    }
+    this.markWinner(player);
     this.turn += 1;
   }
 
@@ -68,43 +76,69 @@ export class TTTBoard {
     return this.turn >= 9;
   }
 
-  isWinner(player: Player) {
+  markWinset(fields: Field[]) {
+    for (const field of fields) {
+      field.markWinning();
+    }
+  }
+
+  markWinner(player: Player) {
+    const winSet: Field[] = [];
     //match row
     for (let i = 0; i < 3; i++) {
       let ownsRow = true;
       for (let j = 0; j < 3; j++) {
+        winSet.push(this.getField(i, j));
         if (player !== this.getField(i, j).state) {
           ownsRow = false;
+          winSet.splice(0);
         }
       }
       if (ownsRow) {
-        return true;
+        this.markWinset(winSet);
+        this.winner = player;
       }
     }
     //match col
     for (let j = 0; j < 3; j++) {
       let ownsCol = true;
       for (let i = 0; i < 3; i++) {
+        winSet.push(this.getField(i, j));
         if (player !== this.getField(i, j).state) {
           ownsCol = false;
+          winSet.splice(0);
         }
       }
       if (ownsCol) {
-        return true;
+        this.markWinset(winSet);
+        this.winner = player;
       }
     }
     //diags
     let ownsD1 = true;
     let ownsD2 = true;
     for (let i = 0; i < 3; i++) {
+      winSet.push(this.getField(i, i));
       if (player !== this.getField(i, i).state) {
         ownsD1 = false;
-      }
-      if (player !== this.getField(i, 2 - i).state) {
-        ownsD2 = false;
+        winSet.splice(0);
       }
     }
-    return ownsD1 || ownsD2;
+    if (ownsD1) {
+      this.markWinset(winSet);
+      this.winner = player;
+    }
+    for (let i = 0; i < 3; i++) {
+      winSet.push(this.getField(i, 2 - i));
+      if (player !== this.getField(i, 2 - i).state) {
+        ownsD2 = false;
+        winSet.splice(0);
+      }
+    }
+    if (ownsD2) {
+      this.markWinset(winSet);
+      this.winner = player;
+    }
   }
 
   getWinner(): FieldState {
