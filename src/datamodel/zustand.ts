@@ -3,22 +3,16 @@ import { Player, TTTBoard } from "./gamestate";
 
 export type GameState = {
   board: TTTBoard;
-  claimField: (i: number, j: number, p: Player) => void;
+  claimField: (i: number, j: number) => void;
   clearBoard: () => void;
 };
 
-export const useTTTStore = create<GameState>((set) => ({
+export const useTTTStore = create<GameState>()((set) => ({
   board: new TTTBoard(),
-  claimField: (i: number, j: number, p: Player) =>
+  claimField: (i: number, j: number) =>
     set((state) => {
-      state.board.claim(i, j, p);
+      state.board.claim(i, j);
       return {board: state.board};
     }),
   clearBoard: () => set({ board: new TTTBoard() }),
-}));
-
-export const useBearStore = create<{ bears: number }>((set) => ({
-  bears: 0,
-  increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
-  removeAllBears: () => set({ bears: 0 }),
 }));

@@ -21,7 +21,7 @@ const Home: NextPage = () => {
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
           Create <span className="text-purple-300">T3TTT</span> App
         </h1>
-        <Board board={board} claimField={claimField} clearBoard={clearBoard} />
+        <Board board={board} claimField={claimField}/>
         <h1 className="text-5xl font-extrabold leading-normal text-gray-700 md:text-[5rem]">
           <Label board={board} />
         </h1>
@@ -44,7 +44,7 @@ const Label = ({ board }: { board: TTTBoard }) => {
   if (!board.isOver()) {
     return (
       <span>
-        Turn: <span className="text-purple-300">{board.turn.toString()}</span>
+        Turn: <span className="text-purple-300">{board.getActivePlayer().toString()}</span>
       </span>
     );
   } else {
@@ -63,7 +63,7 @@ const Label = ({ board }: { board: TTTBoard }) => {
   }
 };
 
-const Board = ({ board, claimField, clearBoard }: GameState) => {
+const Board = ({ board, claimField }: Omit<GameState, "clearBoard">) => {
   return (
     <div className="mt-3 grid grid-cols-3 gap-3 pt-3 text-center">
       {board.fields.map((row, i) =>
@@ -75,7 +75,7 @@ const Board = ({ board, claimField, clearBoard }: GameState) => {
             j={j}
             claimField={(i: number, j: number) => {
               if (!board.isOver()) {
-                claimField(i, j, board.turn);
+                claimField(i, j);
               }
             }}
           />

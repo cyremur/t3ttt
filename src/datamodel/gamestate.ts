@@ -11,13 +11,16 @@ export class Field {
   claim(player: Player) {
     if (this.state === " ") {
       this.state = player;
+      return true;
     }
+    return false;
   }
 }
 
 export class TTTBoard {
   fields: Field[][];
-  turn: Player;
+  turn: number;
+  winner: FieldState;
 
   constructor() {
     this.fields = [
@@ -25,18 +28,22 @@ export class TTTBoard {
       [new Field(), new Field(), new Field()],
       [new Field(), new Field(), new Field()],
     ];
-    this.turn = "X";
+    this.turn = 0;
+    this.winner = " ";
   }
 
-  claim(i: number, j: number, p: Player) {
-    this.getField(i, j).claim(p);
-    switch (this.turn) {
-      case "X":
-        this.turn = "O";
-        break;
-      case "O":
-        this.turn = "X";
-        break;
+  getActivePlayer(): Player {
+    return this.turn % 2 == 0 ? "X" : "O";
+  }
+
+  claim(i: number, j: number) {
+    const player = this.getActivePlayer()
+    const claimSuccessful = this.getField(i, j).claim(player);
+    if (claimSuccessful) {
+      if (this.isWinner(player)) {
+        this.winner = player;
+      }
+      this.turn += 1;
     }
   }
 
@@ -53,17 +60,10 @@ export class TTTBoard {
   }
 
   isOver() {
-    if (this.getWinner() !== " ") {
+    if (this.winner !== " ") {
       return true;
     }
-    for (const row of this.fields) {
-      for (const field of row) {
-        if (field.state === " ") {
-          return false;
-        }
-      }
-    }
-    return true;
+    return this.turn >= 9;
   }
 
   isWinner(player: Player) {
@@ -106,8 +106,6 @@ export class TTTBoard {
   }
 
   getWinner(): FieldState {
-    if (this.isWinner("X")) return "X";
-    if (this.isWinner("O")) return "O";
-    return " ";
+    return this.winner;
   }
 }
